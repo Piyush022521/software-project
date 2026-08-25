@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profile - BlueDart Express</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-brand"><span class="navbar-logo">📦</span>Blue<span style="color:var(--secondary)">Dart</span> Express</div>
+  <div class="navbar-user">
+    <div class="user-avatar" id="nav-user-avatar">U</div>
+    <span id="nav-user-name" style="font-weight:600;font-size:14px;"></span>
+    <button class="btn btn-light btn-sm" onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+<div class="dashboard-layout">
+  <aside class="sidebar">
+    <div class="sidebar-menu">
+      <div class="sidebar-label">Customer Menu</div>
+      <div class="sidebar-item"><a href="dashboard.html"><span class="icon">📊</span> Dashboard</a></div>
+      <div class="sidebar-item"><a href="book-courier.html"><span class="icon">➕</span> Book Courier</a></div>
+      <div class="sidebar-item"><a href="my-couriers.html"><span class="icon">📦</span> My Couriers</a></div>
+      <div class="sidebar-item"><a href="track.html"><span class="icon">📍</span> Track Shipment</a></div>
+      <div class="sidebar-label">Account</div>
+      <div class="sidebar-item"><a href="profile.html" class="active"><span class="icon">👤</span> Profile</a></div>
+      <div class="sidebar-item"><a href="#" onclick="logout()"><span class="icon">🚪</span> Logout</a></div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-header"><h1>My Profile</h1><p>Manage your account information</p></div>
+
+    <div class="grid-2" style="gap:24px;">
+      <div class="card">
+        <div class="card-header"><h3 class="card-title">Personal Information</h3></div>
+        <div id="profile-alert"></div>
+        <form id="profile-form">
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" id="name" class="form-control" placeholder="Your name" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" id="email" class="form-control" disabled style="background:var(--gray-100);" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone Number</label>
+            <input type="tel" id="phone" class="form-control" placeholder="10-digit number" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Address</label>
+            <textarea id="address" class="form-control" rows="2" placeholder="Your address"></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">City</label>
+              <input type="text" id="city" class="form-control" placeholder="City" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">State</label>
+              <input type="text" id="state" class="form-control" placeholder="State" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Pincode</label>
+            <input type="text" id="pincode" class="form-control" placeholder="6-digit pincode" />
+          </div>
+          <button type="submit" class="btn btn-primary" id="save-btn">Save Changes</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h3 class="card-title">Change Password</h3></div>
+        <div id="pwd-alert"></div>
+        <form id="pwd-form">
+          <div class="form-group">
+            <label class="form-label">Current Password</label>
+            <input type="password" id="current-pwd" class="form-control" placeholder="Current password" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">New Password</label>
+            <input type="password" id="new-pwd" class="form-control" placeholder="New password (min 6 chars)" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Confirm New Password</label>
+            <input type="password" id="confirm-pwd" class="form-control" placeholder="Repeat new password" required />
+          </div>
+          <button type="submit" class="btn btn-warning" id="pwd-btn">Change Password</button>
+        </form>
+
+        <div style="margin-top:28px;padding-top:20px;border-top:1px solid var(--gray-100);">
+          <h4 style="font-size:15px;font-weight:700;margin-bottom:12px;">Account Info</h4>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <div style="width:56px;height:56px;background:var(--primary);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;" id="big-avatar">U</div>
+            <div>
+              <div style="font-weight:700;" id="profile-name-display">—</div>
+              <div style="font-size:13px;color:var(--gray-500);" id="profile-role-display">Customer</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/utils.js"></script>
+<script>
+  if (!requireAuth('customer')) {}
+  renderNavUser();
+
+  async function loadProfile() {
+    try {
+      const data = await API.getMe();
+      const u = data.user;
+      document.getElementById('name').value = u.name || '';
+      document.getElementById('email').value = u.email || '';
+      document.getElementById('phone').value = u.phone || '';
+      document.getElementById('big-avatar').textContent = u.name.charAt(0).toUpperCase();
+      document.getElementById('profile-name-display').textContent = u.name;
+      document.getElementById('profile-role-display').textContent = capitalize(u.role);
+
+      if (u.customerProfile) {
+        document.getElementById('address').value = u.customerProfile.address || '';
+        document.getElementById('city').value = u.customerProfile.city || '';
+        document.getElementById('state').value = u.customerProfile.state || '';
+        document.getElementById('pincode').value = u.customerProfile.pincode || '';
+      }
+    } catch (e) {
+      showToast('Failed to load profile', 'error');
+    }
+  }
+
+  document.getElementById('profile-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('save-btn');
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+    try {
+      await API.updateProfile({
+        name: document.getElementById('name').value,
+        phone: document.getElementById('phone').value,
+        address: document.getElementById('address').value,
+        city: document.getElementById('city').value,
+        state: document.getElementById('state').value,
+        pincode: document.getElementById('pincode').value,
+      });
+      const stored = getUser();
+      stored.name = document.getElementById('name').value;
+      localStorage.setItem('user', JSON.stringify(stored));
+      showToast('Profile updated successfully!', 'success');
+      renderNavUser();
+    } catch (e) {
+      document.getElementById('profile-alert').innerHTML = `<div class="alert alert-error">❌ ${e.message}</div>`;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Save Changes';
+    }
+  });
+
+  document.getElementById('pwd-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const np = document.getElementById('new-pwd').value;
+    const cp = document.getElementById('confirm-pwd').value;
+    if (np !== cp) { document.getElementById('pwd-alert').innerHTML = '<div class="alert alert-error">❌ Passwords do not match.</div>'; return; }
+    const btn = document.getElementById('pwd-btn');
+    btn.disabled = true;
+    btn.textContent = 'Changing...';
+    try {
+      await API.changePassword({ currentPassword: document.getElementById('current-pwd').value, newPassword: np });
+      document.getElementById('pwd-alert').innerHTML = '<div class="alert alert-success">✅ Password changed successfully!</div>';
+      e.target.reset();
+    } catch (e) {
+      document.getElementById('pwd-alert').innerHTML = `<div class="alert alert-error">❌ ${e.message}</div>`;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Change Password';
+    }
+  });
+
+  loadProfile();
+</script>
+</body>
+</html>

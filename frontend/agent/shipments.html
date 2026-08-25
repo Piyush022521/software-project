@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Assigned Shipments - BlueDart Express</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-brand"><span class="navbar-logo">📦</span>Blue<span style="color:var(--secondary)">Dart</span> Express</div>
+  <div class="navbar-user">
+    <div class="user-avatar" id="nav-user-avatar">A</div>
+    <span id="nav-user-name" style="font-weight:600;font-size:14px;"></span>
+    <button class="btn btn-light btn-sm" onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+<div class="dashboard-layout">
+  <aside class="sidebar">
+    <div class="sidebar-menu">
+      <div class="sidebar-label">Agent Menu</div>
+      <div class="sidebar-item"><a href="dashboard.html"><span class="icon">📊</span> Dashboard</a></div>
+      <div class="sidebar-item"><a href="shipments.html" class="active"><span class="icon">🚚</span> Assigned Shipments</a></div>
+      <div class="sidebar-label">Account</div>
+      <div class="sidebar-item"><a href="profile.html"><span class="icon">👤</span> Profile</a></div>
+      <div class="sidebar-item"><a href="#" onclick="logout()"><span class="icon">🚪</span> Logout</a></div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-header"><h1>Assigned Shipments</h1><p>All shipments assigned to you</p></div>
+
+    <div class="card" style="margin-bottom:20px;">
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+        <div class="search-bar">
+          <span>🔍</span>
+          <input type="text" id="search" placeholder="Search by tracking no..." oninput="filter()" />
+        </div>
+        <select id="status-filter" class="form-control" style="max-width:180px;" onchange="filter()">
+          <option value="">All Statuses</option>
+          <option value="BOOKED">Booked</option>
+          <option value="PICKED_UP">Picked Up</option>
+          <option value="IN_TRANSIT">In Transit</option>
+          <option value="AT_HUB">At Hub</option>
+          <option value="OUT_FOR_DELIVERY">Out for Delivery</option>
+          <option value="DELIVERED">Delivered</option>
+          <option value="DELIVERY_FAILED">Failed</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr><th>Tracking No.</th><th>Sender</th><th>Receiver</th><th>Route</th><th>Pickup Date</th><th>Status</th><th>Action</th></tr>
+          </thead>
+          <tbody id="table-body">
+            <tr><td colspan="7" style="text-align:center;padding:32px;"><div class="spinner"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/utils.js"></script>
+<script>
+  if (!requireAuth('agent')) {}
+  renderNavUser();
+
+  let allShipments = [];
+
+  async function load() {
+    try {
+      const data = await API.getShipments();
+      allShipments = data.shipments;
+      filter();
+    } catch (e) {
+      showToast('Failed to load shipments', 'error');
+    }
+  }
+
+  function filter() {
+    const search = document.getElementById('search').value.toLowerCase();
+    const status = document.getElementById('status-filter').value;
+    const filtered = allShipments.filter(s =>
+      (!search || s.trackingNumber.toLowerCase().includes(search)) &&
+      (!status || s.status === status)
+    );
+    const tbody = document.getElementById('table-body');
+    if (!filtered.length) {
+      tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">🚚</div><h3>No shipments found</h3></div></td></tr>';
+      return;
+    }
+    tbody.innerHTML = filtered.map(s => `
+      <tr>
+        <td><a href="shipment-detail.html?id=${s.id}" style="color:var(--primary);font-weight:700;">${s.trackingNumber}</a></td>
+        <td>${s.senderName}</td>
+        <td>${s.receiverName}</td>
+        <td>${s.pickupLocation} → ${s.deliveryLocation}</td>
+        <td>${formatDate(s.pickupDate)}</td>
+        <td>${statusBadge(s.status)}</td>
+        <td><a href="shipment-detail.html?id=${s.id}" class="btn btn-primary btn-sm">Manage</a></td>
+      </tr>
+    `).join('');
+  }
+
+  load();
+</script>
+</body>
+</html>

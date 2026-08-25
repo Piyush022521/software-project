@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Customers - Admin - BlueDart Express</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-brand"><span class="navbar-logo">📦</span>Blue<span style="color:var(--secondary)">Dart</span> Express</div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <span style="background:var(--danger);color:white;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;">ADMIN</span>
+    <div class="user-avatar" id="nav-user-avatar">A</div>
+    <span id="nav-user-name" style="font-weight:600;font-size:14px;"></span>
+    <button class="btn btn-light btn-sm" onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+<div class="dashboard-layout">
+  <aside class="sidebar">
+    <div class="sidebar-menu">
+      <div class="sidebar-label">Management</div>
+      <div class="sidebar-item"><a href="dashboard.html"><span class="icon">📊</span> Dashboard</a></div>
+      <div class="sidebar-item"><a href="customers.html" class="active"><span class="icon">👥</span> Customers</a></div>
+      <div class="sidebar-item"><a href="agents.html"><span class="icon">🚚</span> Delivery Agents</a></div>
+      <div class="sidebar-item"><a href="couriers.html"><span class="icon">📦</span> All Couriers</a></div>
+      <div class="sidebar-item"><a href="assign.html"><span class="icon">📋</span> Assign Agent</a></div>
+      <div class="sidebar-item"><a href="reports.html"><span class="icon">📈</span> Reports</a></div>
+      <div class="sidebar-label">System</div>
+      <div class="sidebar-item"><a href="#" onclick="logout()"><span class="icon">🚪</span> Logout</a></div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-header"><h1>Customers</h1><p>Manage all registered customers</p></div>
+
+    <div class="card" style="margin-bottom:20px;">
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+        <div class="search-bar">
+          <span>🔍</span>
+          <input type="text" id="search" placeholder="Search by name or email..." oninput="filter()" />
+        </div>
+        <span id="count-label" style="font-size:14px;color:var(--gray-500);"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr><th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>City</th><th>Couriers</th><th>Status</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="table-body">
+            <tr><td colspan="8" style="text-align:center;"><div class="spinner"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/utils.js"></script>
+<script>
+  if (!requireAuth('admin')) {}
+  renderNavUser();
+
+  let allCustomers = [];
+
+  async function load() {
+    try {
+      const data = await API.getAdminCustomers();
+      allCustomers = data.customers;
+      filter();
+    } catch (e) { showToast('Failed to load customers', 'error'); }
+  }
+
+  function filter() {
+    const search = document.getElementById('search').value.toLowerCase();
+    const filtered = allCustomers.filter(c =>
+      !search || c.name.toLowerCase().includes(search) || c.email.toLowerCase().includes(search)
+    );
+    document.getElementById('count-label').textContent = `${filtered.length} customer${filtered.length !== 1 ? 's' : ''}`;
+    const tbody = document.getElementById('table-body');
+    if (!filtered.length) {
+      tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">👥</div><h3>No customers found</h3></div></td></tr>';
+      return;
+    }
+    tbody.innerHTML = filtered.map((c, i) => `
+      <tr>
+        <td style="color:var(--gray-500);">${i + 1}</td>
+        <td><div style="font-weight:600;">${c.name}</div></td>
+        <td>${c.email}</td>
+        <td>${c.phone || '—'}</td>
+        <td>${c.customerProfile?.city || '—'}</td>
+        <td><span style="background:var(--primary-light);color:var(--primary);padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;">${c.courierCount}</span></td>
+        <td>
+          <span style="background:${c.isActive ? '#d1fae5' : '#fee2e2'};color:${c.isActive ? '#065f46' : '#991b1b'};padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;">
+            ${c.isActive ? 'Active' : 'Disabled'}
+          </span>
+        </td>
+        <td>
+          <button class="btn btn-sm ${c.isActive ? 'btn-danger' : 'btn-success'}" onclick="toggleStatus(${c.id})">
+            ${c.isActive ? 'Disable' : 'Enable'}
+          </button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  async function toggleStatus(id) {
+    try {
+      await API.toggleUserStatus(id);
+      showToast('User status updated.', 'success');
+      load();
+    } catch (e) { showToast('Failed: ' + e.message, 'error'); }
+  }
+
+  load();
+</script>
+</body>
+</html>

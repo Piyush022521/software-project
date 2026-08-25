@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profile - Agent - BlueDart Express</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-brand"><span class="navbar-logo">📦</span>Blue<span style="color:var(--secondary)">Dart</span> Express</div>
+  <div class="navbar-user">
+    <div class="user-avatar" id="nav-user-avatar">A</div>
+    <span id="nav-user-name" style="font-weight:600;font-size:14px;"></span>
+    <button class="btn btn-light btn-sm" onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+<div class="dashboard-layout">
+  <aside class="sidebar">
+    <div class="sidebar-menu">
+      <div class="sidebar-label">Agent Menu</div>
+      <div class="sidebar-item"><a href="dashboard.html"><span class="icon">📊</span> Dashboard</a></div>
+      <div class="sidebar-item"><a href="shipments.html"><span class="icon">🚚</span> Assigned Shipments</a></div>
+      <div class="sidebar-label">Account</div>
+      <div class="sidebar-item"><a href="profile.html" class="active"><span class="icon">👤</span> Profile</a></div>
+      <div class="sidebar-item"><a href="#" onclick="logout()"><span class="icon">🚪</span> Logout</a></div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-header"><h1>My Profile</h1><p>Agent account information</p></div>
+
+    <div class="grid-2" style="gap:24px;">
+      <div class="card">
+        <div class="card-header"><h3 class="card-title">Personal Information</h3></div>
+        <div id="profile-alert"></div>
+        <form id="profile-form">
+          <div class="form-group"><label class="form-label">Full Name</label><input type="text" id="name" class="form-control" required /></div>
+          <div class="form-group"><label class="form-label">Email</label><input type="email" id="email" class="form-control" disabled style="background:var(--gray-100);" /></div>
+          <div class="form-group"><label class="form-label">Phone</label><input type="tel" id="phone" class="form-control" /></div>
+          <div class="form-group"><label class="form-label">Vehicle Type</label><input type="text" id="vehicleType" class="form-control" placeholder="e.g. Bike, Van" /></div>
+          <div class="form-group"><label class="form-label">Vehicle Number</label><input type="text" id="vehicleNumber" class="form-control" placeholder="e.g. MH12AB1234" /></div>
+          <div class="form-group"><label class="form-label">Service Area</label><input type="text" id="serviceArea" class="form-control" placeholder="e.g. Mumbai, Thane" /></div>
+          <button type="submit" class="btn btn-primary" id="save-btn">Save Changes</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h3 class="card-title">Change Password</h3></div>
+        <div id="pwd-alert"></div>
+        <form id="pwd-form">
+          <div class="form-group"><label class="form-label">Current Password</label><input type="password" id="current-pwd" class="form-control" required /></div>
+          <div class="form-group"><label class="form-label">New Password</label><input type="password" id="new-pwd" class="form-control" required /></div>
+          <div class="form-group"><label class="form-label">Confirm Password</label><input type="password" id="confirm-pwd" class="form-control" required /></div>
+          <button type="submit" class="btn btn-warning" id="pwd-btn">Change Password</button>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/utils.js"></script>
+<script>
+  if (!requireAuth('agent')) {}
+  renderNavUser();
+
+  async function loadProfile() {
+    try {
+      const data = await API.getMe();
+      const u = data.user;
+      document.getElementById('name').value = u.name || '';
+      document.getElementById('email').value = u.email || '';
+      document.getElementById('phone').value = u.phone || '';
+      if (u.agentProfile) {
+        document.getElementById('vehicleType').value = u.agentProfile.vehicleType || '';
+        document.getElementById('vehicleNumber').value = u.agentProfile.vehicleNumber || '';
+        document.getElementById('serviceArea').value = u.agentProfile.serviceArea || '';
+      }
+    } catch (e) { showToast('Failed to load profile', 'error'); }
+  }
+
+  document.getElementById('profile-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('save-btn');
+    btn.disabled = true; btn.textContent = 'Saving...';
+    try {
+      await API.updateProfile({
+        name: document.getElementById('name').value,
+        phone: document.getElementById('phone').value,
+        vehicleType: document.getElementById('vehicleType').value,
+        vehicleNumber: document.getElementById('vehicleNumber').value,
+        serviceArea: document.getElementById('serviceArea').value,
+      });
+      showToast('Profile updated!', 'success');
+    } catch (e) {
+      document.getElementById('profile-alert').innerHTML = `<div class="alert alert-error">❌ ${e.message}</div>`;
+    } finally { btn.disabled = false; btn.textContent = 'Save Changes'; }
+  });
+
+  document.getElementById('pwd-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const np = document.getElementById('new-pwd').value;
+    if (np !== document.getElementById('confirm-pwd').value) {
+      document.getElementById('pwd-alert').innerHTML = '<div class="alert alert-error">Passwords do not match.</div>'; return;
+    }
+    const btn = document.getElementById('pwd-btn');
+    btn.disabled = true; btn.textContent = 'Changing...';
+    try {
+      await API.changePassword({ currentPassword: document.getElementById('current-pwd').value, newPassword: np });
+      document.getElementById('pwd-alert').innerHTML = '<div class="alert alert-success">✅ Password changed!</div>';
+      e.target.reset();
+    } catch (e) {
+      document.getElementById('pwd-alert').innerHTML = `<div class="alert alert-error">❌ ${e.message}</div>`;
+    } finally { btn.disabled = false; btn.textContent = 'Change Password'; }
+  });
+
+  loadProfile();
+</script>
+</body>
+</html>

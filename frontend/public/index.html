@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BlueDart Express - Courier Service</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    body { background: var(--white); }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(135deg, #1a56db 0%, #0e3a8a 100%);
+      color: white;
+      padding: 80px 24px;
+      text-align: center;
+    }
+    .hero h1 { font-size: 48px; font-weight: 900; margin-bottom: 16px; }
+    .hero h1 span { color: #fbbf24; }
+    .hero p { font-size: 20px; opacity: 0.9; max-width: 600px; margin: 0 auto 36px; }
+    .hero-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+    .hero-track { background: white; border-radius: 12px; padding: 32px; max-width: 600px; margin: 48px auto 0; }
+    .hero-track h3 { font-size: 20px; font-weight: 700; color: var(--gray-900); margin-bottom: 16px; }
+    .track-input-row { display: flex; gap: 8px; }
+    .track-input-row input {
+      flex: 1; padding: 12px 16px; border: 1.5px solid var(--gray-300);
+      border-radius: 8px; font-size: 15px; outline: none;
+    }
+    .track-input-row input:focus { border-color: var(--primary); }
+
+    /* Features */
+    .features { padding: 80px 24px; background: var(--gray-100); }
+    .features h2 { text-align: center; font-size: 32px; font-weight: 800; margin-bottom: 48px; }
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; max-width: 1000px; margin: 0 auto; }
+    .feature-card { background: white; border-radius: var(--border-radius); padding: 28px; text-align: center; box-shadow: var(--shadow); }
+    .feature-icon { font-size: 40px; margin-bottom: 16px; }
+    .feature-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .feature-card p { color: var(--gray-500); font-size: 14px; }
+
+    /* Services */
+    .services { padding: 80px 24px; max-width: 1100px; margin: 0 auto; }
+    .services h2 { text-align: center; font-size: 32px; font-weight: 800; margin-bottom: 48px; }
+    .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+    .service-card { border-radius: var(--border-radius); overflow: hidden; box-shadow: var(--shadow); }
+    .service-card-header { padding: 28px; color: white; }
+    .service-card-header.blue { background: linear-gradient(135deg, #1a56db, #3b82f6); }
+    .service-card-header.orange { background: linear-gradient(135deg, #ff6b00, #f59e0b); }
+    .service-card-header.green { background: linear-gradient(135deg, #0e9f6e, #10b981); }
+    .service-card-header h3 { font-size: 22px; font-weight: 800; }
+    .service-card-header .price { font-size: 32px; font-weight: 900; margin-top: 8px; }
+    .service-card-header .price span { font-size: 14px; font-weight: 400; opacity: 0.8; }
+    .service-card-body { background: white; padding: 24px; }
+    .service-card-body li { padding: 8px 0; border-bottom: 1px solid var(--gray-100); font-size: 14px; }
+    .service-card-body li::before { content: '✓ '; color: var(--success); font-weight: 700; }
+
+    /* Stats */
+    .stats-section { background: var(--primary); color: white; padding: 60px 24px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 32px; max-width: 900px; margin: 0 auto; text-align: center; }
+    .stat-num { font-size: 44px; font-weight: 900; }
+    .stat-label { font-size: 15px; opacity: 0.8; margin-top: 4px; }
+
+    /* Footer */
+    footer { background: var(--dark); color: #9ca3af; padding: 48px 24px 24px; }
+    .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 32px; max-width: 1100px; margin: 0 auto 32px; }
+    .footer-brand { font-size: 22px; font-weight: 800; color: white; margin-bottom: 12px; }
+    .footer-brand span { color: var(--secondary); }
+    .footer-col h4 { color: white; font-size: 15px; margin-bottom: 14px; }
+    .footer-col ul li { padding: 4px 0; }
+    .footer-col ul li a { color: #9ca3af; font-size: 14px; transition: color 0.2s; }
+    .footer-col ul li a:hover { color: white; }
+    .footer-bottom { text-align: center; padding-top: 24px; border-top: 1px solid #374151; font-size: 13px; }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <div class="navbar-brand">
+    <span class="navbar-logo">📦</span>
+    Blue<span>Dart</span> Express
+  </div>
+  <div class="navbar-links">
+    <a href="index.html" class="active">Home</a>
+    <a href="about.html">About</a>
+    <a href="contact.html">Contact</a>
+    <a href="track.html">Track</a>
+  </div>
+  <div style="display:flex;gap:8px;">
+    <a href="login.html" class="btn btn-outline btn-sm">Login</a>
+    <a href="register.html" class="btn btn-primary btn-sm">Register</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <h1>Deliver with <span>Confidence</span></h1>
+  <p>Fast, reliable courier services across India. Track your shipments in real time.</p>
+  <div class="hero-btns">
+    <a href="register.html" class="btn btn-secondary btn-lg">Book a Courier</a>
+    <a href="track.html" class="btn btn-outline btn-lg" style="border-color:white;color:white;">Track Shipment</a>
+  </div>
+  <div class="hero-track">
+    <h3>🔍 Track Your Shipment</h3>
+    <div class="track-input-row">
+      <input type="text" id="track-input" placeholder="Enter Tracking Number (e.g. BD2026001002)" />
+      <button class="btn btn-primary" onclick="quickTrack()">Track</button>
+    </div>
+    <div id="quick-track-result" style="margin-top:16px;"></div>
+  </div>
+</section>
+
+<!-- Features -->
+<section class="features">
+  <h2>Why Choose BlueDart Express?</h2>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <h3>Express Delivery</h3>
+      <p>Same day and next day delivery options available across major cities.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📍</div>
+      <h3>Real-Time Tracking</h3>
+      <p>Track your package every step of the way with live status updates.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔒</div>
+      <h3>Safe & Secure</h3>
+      <p>Your packages are handled with care and insured for safety.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">💰</div>
+      <h3>Affordable Rates</h3>
+      <p>Competitive pricing with transparent charges. No hidden fees.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Services -->
+<section class="services">
+  <h2>Our Services</h2>
+  <div class="services-grid">
+    <div class="service-card">
+      <div class="service-card-header blue">
+        <h3>Standard</h3>
+        <div class="price">₹30<span>/kg</span></div>
+      </div>
+      <div class="service-card-body">
+        <ul>
+          <li>3–5 Business Days</li>
+          <li>Tracking Included</li>
+          <li>Door Pickup</li>
+          <li>All Package Types</li>
+        </ul>
+        <a href="register.html" class="btn btn-primary btn-block" style="margin-top:16px;">Book Now</a>
+      </div>
+    </div>
+    <div class="service-card">
+      <div class="service-card-header orange">
+        <h3>Express</h3>
+        <div class="price">₹54<span>/kg</span></div>
+      </div>
+      <div class="service-card-body">
+        <ul>
+          <li>1–2 Business Days</li>
+          <li>Priority Handling</li>
+          <li>Door Pickup & Delivery</li>
+          <li>SMS Notifications</li>
+        </ul>
+        <a href="register.html" class="btn btn-secondary btn-block" style="margin-top:16px;">Book Now</a>
+      </div>
+    </div>
+    <div class="service-card">
+      <div class="service-card-header green">
+        <h3>Overnight</h3>
+        <div class="price">₹75<span>/kg</span></div>
+      </div>
+      <div class="service-card-body">
+        <ul>
+          <li>Next Morning Delivery</li>
+          <li>Guaranteed Time Slot</li>
+          <li>Dedicated Agent</li>
+          <li>Priority Support</li>
+        </ul>
+        <a href="register.html" class="btn btn-success btn-block" style="margin-top:16px;">Book Now</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats -->
+<section class="stats-section">
+  <div class="stats-grid">
+    <div><div class="stat-num">50K+</div><div class="stat-label">Packages Delivered</div></div>
+    <div><div class="stat-num">200+</div><div class="stat-label">Cities Covered</div></div>
+    <div><div class="stat-num">99%</div><div class="stat-label">On-Time Delivery</div></div>
+    <div><div class="stat-num">10K+</div><div class="stat-label">Happy Customers</div></div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <div class="footer-brand">📦 Blue<span>Dart</span></div>
+      <p style="font-size:14px;line-height:1.7;">India's most trusted courier service partner since 2000.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Quick Links</h4>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="track.html">Track Shipment</a></li>
+        <li><a href="register.html">Book Courier</a></li>
+        <li><a href="about.html">About Us</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Services</h4>
+      <ul>
+        <li><a href="#">Standard Delivery</a></li>
+        <li><a href="#">Express Delivery</a></li>
+        <li><a href="#">Overnight Delivery</a></li>
+        <li><a href="#">Bulk Shipment</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <ul>
+        <li><a href="#">📞 1800-103-3300</a></li>
+        <li><a href="#">✉️ support@bluedart.com</a></li>
+        <li><a href="#">📍 Mumbai, Maharashtra</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">© 2026 BlueDart Express. All rights reserved. | College SE Lab Project</div>
+</footer>
+
+<script src="../js/api.js"></script>
+<script src="../js/utils.js"></script>
+<script>
+  async function quickTrack() {
+    const input = document.getElementById('track-input').value.trim();
+    const result = document.getElementById('quick-track-result');
+    if (!input) { result.innerHTML = '<div class="alert alert-warning">Please enter a tracking number.</div>'; return; }
+    result.innerHTML = '<div class="spinner"></div>';
+    try {
+      const data = await API.trackCourier(input);
+      const c = data.courier;
+      result.innerHTML = `
+        <div class="alert alert-success">
+          <div><strong>${c.trackingNumber}</strong> — ${statusBadge(c.status)}</div>
+          <div style="margin-top:6px;font-size:13px;">${c.pickupLocation} → ${c.deliveryLocation} | ${c.receiverName}</div>
+        </div>
+        <a href="track.html?tn=${c.trackingNumber}" class="btn btn-primary btn-sm">View Full Details</a>
+      `;
+    } catch (e) {
+      result.innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+    }
+  }
+
+  document.getElementById('track-input').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') quickTrack();
+  });
+</script>
+</body>
+</html>

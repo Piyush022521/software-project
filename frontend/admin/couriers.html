@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>All Couriers - Admin - BlueDart Express</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-brand"><span class="navbar-logo">📦</span>Blue<span style="color:var(--secondary)">Dart</span> Express</div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <span style="background:var(--danger);color:white;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;">ADMIN</span>
+    <div class="user-avatar" id="nav-user-avatar">A</div>
+    <span id="nav-user-name" style="font-weight:600;font-size:14px;"></span>
+    <button class="btn btn-light btn-sm" onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+<div class="dashboard-layout">
+  <aside class="sidebar">
+    <div class="sidebar-menu">
+      <div class="sidebar-label">Management</div>
+      <div class="sidebar-item"><a href="dashboard.html"><span class="icon">📊</span> Dashboard</a></div>
+      <div class="sidebar-item"><a href="customers.html"><span class="icon">👥</span> Customers</a></div>
+      <div class="sidebar-item"><a href="agents.html"><span class="icon">🚚</span> Delivery Agents</a></div>
+      <div class="sidebar-item"><a href="couriers.html" class="active"><span class="icon">📦</span> All Couriers</a></div>
+      <div class="sidebar-item"><a href="assign.html"><span class="icon">📋</span> Assign Agent</a></div>
+      <div class="sidebar-item"><a href="reports.html"><span class="icon">📈</span> Reports</a></div>
+      <div class="sidebar-label">System</div>
+      <div class="sidebar-item"><a href="#" onclick="logout()"><span class="icon">🚪</span> Logout</a></div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-header"><h1>All Couriers</h1><p>View and manage all courier bookings</p></div>
+
+    <!-- Search & Filters -->
+    <div class="card" style="margin-bottom:20px;">
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+        <div class="search-bar" style="max-width:300px;">
+          <span>🔍</span>
+          <input type="text" id="search" placeholder="Tracking no, sender, receiver..." oninput="load()" />
+        </div>
+        <select id="status-filter" class="form-control" style="max-width:180px;" onchange="load()">
+          <option value="">All Statuses</option>
+          <option value="BOOKED">Booked</option>
+          <option value="PICKED_UP">Picked Up</option>
+          <option value="IN_TRANSIT">In Transit</option>
+          <option value="AT_HUB">At Hub</option>
+          <option value="OUT_FOR_DELIVERY">Out for Delivery</option>
+          <option value="DELIVERED">Delivered</option>
+          <option value="DELIVERY_FAILED">Failed</option>
+          <option value="CANCELLED">Cancelled</option>
+        </select>
+        <span id="count-label" style="font-size:14px;color:var(--gray-500);"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr><th>Tracking No.</th><th>Customer</th><th>Receiver</th><th>Route</th><th>Weight</th><th>Charge</th><th>Agent</th><th>Date</th><th>Status</th><th>Action</th></tr>
+          </thead>
+          <tbody id="table-body">
+            <tr><td colspan="10" style="text-align:center;"><div class="spinner"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/utils.js"></script>
+<script>
+  if (!requireAuth('admin')) {}
+  renderNavUser();
+
+  let debounceTimer;
+  function load() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(fetchCouriers, 300);
+  }
+
+  async function fetchCouriers() {
+    const search = document.getElementById('search').value;
+    const status = document.getElementById('status-filter').value;
+    let params = [];
+    if (search) params.push(`search=${encodeURIComponent(search)}`);
+    if (status) params.push(`status=${status}`);
+    const qs = params.length ? '?' + params.join('&') : '';
+
+    try {
+      const data = await API.getAdminCouriers(qs);
+      document.getElementById('count-label').textContent = `${data.couriers.length} result${data.couriers.length !== 1 ? 's' : ''}`;
+      const tbody = document.getElementById('table-body');
+      if (!data.couriers.length) {
+        tbody.innerHTML = '<tr><td colspan="10"><div class="empty-state"><div class="empty-icon">📦</div><h3>No couriers found</h3></div></td></tr>';
+        return;
+      }
+      tbody.innerHTML = data.couriers.map(c => `
+        <tr>
+          <td><span style="font-weight:700;color:var(--primary);">${c.trackingNumber}</span></td>
+          <td>${c.customer?.name || '—'}</td>
+          <td>${c.receiverName}</td>
+          <td>${c.pickupLocation} → ${c.deliveryLocation}</td>
+          <td>${c.packageWeight} kg</td>
+          <td style="font-weight:600;">${formatCurrency(c.deliveryCharge)}</td>
+          <td>${c.agent ? c.agent.user.name : '<span style="color:var(--warning);font-size:12px;font-weight:600;">Unassigned</span>'}</td>
+          <td>${formatDate(c.createdAt)}</td>
+          <td>${statusBadge(c.status)}</td>
+          <td><a href="assign.html?id=${c.id}" class="btn btn-primary btn-sm">Manage</a></td>
+        </tr>
+      `).join('');
+    } catch (e) { showToast('Failed to load couriers', 'error'); }
+  }
+
+  fetchCouriers();
+</script>
+</body>
+</html>

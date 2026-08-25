@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Track Shipment - BlueDart Express</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    body { background: var(--gray-100); }
+    .track-hero { background: linear-gradient(135deg, #1a56db, #0e3a8a); color: white; padding: 48px 24px; text-align: center; }
+    .track-hero h1 { font-size: 36px; font-weight: 800; }
+    .track-hero p { opacity: 0.85; margin-top: 8px; font-size: 16px; }
+    .track-box { background: white; border-radius: 12px; padding: 24px; max-width: 600px; margin: -28px auto 0; box-shadow: var(--shadow-lg); }
+    .track-input-row { display: flex; gap: 8px; }
+    .track-input-row input { flex: 1; padding: 14px 16px; border: 1.5px solid var(--gray-300); border-radius: 8px; font-size: 15px; outline: none; }
+    .track-input-row input:focus { border-color: var(--primary); }
+    .main-wrap { max-width: 900px; margin: 40px auto; padding: 0 24px; }
+    .result-card { background: white; border-radius: var(--border-radius); box-shadow: var(--shadow); overflow: hidden; }
+    .result-header { padding: 20px 24px; border-bottom: 1px solid var(--gray-100); display: flex; align-items: center; justify-content: space-between; flex-wrap: gap; }
+    .tracking-num { font-size: 20px; font-weight: 800; color: var(--primary); }
+    .result-info { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; padding: 20px 24px; }
+    .info-item p { font-size: 12px; color: var(--gray-500); margin-bottom: 3px; font-weight: 600; text-transform: uppercase; }
+    .info-item span { font-size: 15px; font-weight: 600; color: var(--gray-900); }
+    .timeline-section { padding: 20px 24px; border-top: 1px solid var(--gray-100); }
+    .timeline-section h3 { font-size: 16px; font-weight: 700; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <div class="navbar-brand"><span class="navbar-logo">📦</span>Blue<span style="color:var(--secondary)">Dart</span> Express</div>
+  <div class="navbar-links">
+    <a href="index.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="contact.html">Contact</a>
+    <a href="track.html" class="active">Track</a>
+  </div>
+  <div style="display:flex;gap:8px;">
+    <a href="login.html" class="btn btn-outline btn-sm">Login</a>
+    <a href="register.html" class="btn btn-primary btn-sm">Register</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<div class="track-hero">
+  <h1>📍 Track Your Shipment</h1>
+  <p>Enter your tracking number to get real-time status updates</p>
+</div>
+
+<div style="max-width:900px;margin:0 auto;padding:0 24px;">
+  <div class="track-box">
+    <div class="track-input-row">
+      <input type="text" id="track-input" placeholder="Enter tracking number (e.g. BD2026001002)" />
+      <button class="btn btn-primary btn-lg" onclick="trackShipment()">Track Now</button>
+    </div>
+    <p style="font-size:13px;color:var(--gray-500);margin-top:8px;">
+      Try: BD2026001001 (Delivered) · BD2026001002 (In Transit) · BD2026001003 (Booked)
+    </p>
+  </div>
+</div>
+
+<!-- Result Area -->
+<div class="main-wrap">
+  <div id="result-area"></div>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/utils.js"></script>
+<script>
+  // Check URL param
+  const urlParams = new URLSearchParams(window.location.search);
+  const tn = urlParams.get('tn');
+  if (tn) {
+    document.getElementById('track-input').value = tn;
+    trackShipment();
+  }
+
+  async function trackShipment() {
+    const input = document.getElementById('track-input').value.trim().toUpperCase();
+    const area = document.getElementById('result-area');
+    if (!input) { area.innerHTML = '<div class="alert alert-warning">Please enter a tracking number.</div>'; return; }
+
+    area.innerHTML = '<div class="spinner"></div>';
+
+    try {
+      const data = await API.trackCourier(input);
+      const c = data.courier;
+      const history = [...c.trackingHistory].reverse(); // latest first
+
+      const statusIcon = {
+        BOOKED: '📋', PICKED_UP: '📦', IN_TRANSIT: '🚚', AT_HUB: '🏭',
+        OUT_FOR_DELIVERY: '🛵', DELIVERED: '✅', DELIVERY_FAILED: '❌', CANCELLED: '🚫',
+      };
+
+      area.innerHTML = `
+        <div class="result-card">
+          <div class="result-header">
+            <div>
+              <div class="tracking-num">${c.trackingNumber}</div>
+              <div style="font-size:14px;color:var(--gray-500);margin-top:4px;">${c.senderName} → ${c.receiverName}</div>
+            </div>
+            <div style="text-align:right;">
+              ${statusBadge(c.status)}
+              <div style="font-size:13px;color:var(--gray-500);margin-top:4px;">${formatDateTime(c.bookedAt)}</div>
+            </div>
+          </div>
+
+          <div class="result-info">
+            <div class="info-item"><p>From</p><span>${c.pickupLocation}</span></div>
+            <div class="info-item"><p>To</p><span>${c.deliveryLocation}</span></div>
+            <div class="info-item"><p>Package Type</p><span>${capitalize(c.packageType)}</span></div>
+            <div class="info-item"><p>Weight</p><span>${c.packageWeight} kg</span></div>
+            <div class="info-item"><p>Delivery Type</p><span>${capitalize(c.deliveryType)}</span></div>
+            <div class="info-item"><p>Pickup Date</p><span>${formatDate(c.pickupDate)}</span></div>
+            ${c.agent ? `<div class="info-item"><p>Delivery Agent</p><span>${c.agent.name}</span></div>` : ''}
+          </div>
+
+          <div class="timeline-section">
+            <h3>📋 Tracking History</h3>
+            <div class="timeline">
+              ${history.map((h, i) => `
+                <div class="timeline-item">
+                  <div class="timeline-dot ${i === 0 ? (h.status === 'DELIVERED' ? 'delivered' : 'active') : ''}"></div>
+                  <div class="timeline-content">
+                    <h4>${statusIcon[h.status] || '●'} ${h.status.replace(/_/g, ' ')}</h4>
+                    <p>${h.location || '—'} ${h.remarks ? '· ' + h.remarks : ''}</p>
+                    <div class="time">${formatDateTime(h.timestamp)}</div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+    } catch (e) {
+      area.innerHTML = `
+        <div class="card" style="text-align:center;padding:48px;">
+          <div style="font-size:48px;">🔍</div>
+          <h3 style="margin-top:12px;">Shipment Not Found</h3>
+          <p style="color:var(--gray-500);margin-top:8px;">${e.message}</p>
+        </div>`;
+    }
+  }
+
+  document.getElementById('track-input').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') trackShipment();
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Track Shipment - BlueDart Express</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-brand"><span class="navbar-logo">📦</span>Blue<span style="color:var(--secondary)">Dart</span> Express</div>
+  <div class="navbar-user">
+    <div class="user-avatar" id="nav-user-avatar">U</div>
+    <span id="nav-user-name" style="font-weight:600;font-size:14px;"></span>
+    <button class="btn btn-light btn-sm" onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+<div class="dashboard-layout">
+  <aside class="sidebar">
+    <div class="sidebar-menu">
+      <div class="sidebar-label">Customer Menu</div>
+      <div class="sidebar-item"><a href="dashboard.html"><span class="icon">📊</span> Dashboard</a></div>
+      <div class="sidebar-item"><a href="book-courier.html"><span class="icon">➕</span> Book Courier</a></div>
+      <div class="sidebar-item"><a href="my-couriers.html"><span class="icon">📦</span> My Couriers</a></div>
+      <div class="sidebar-item"><a href="track.html" class="active"><span class="icon">📍</span> Track Shipment</a></div>
+      <div class="sidebar-label">Account</div>
+      <div class="sidebar-item"><a href="profile.html"><span class="icon">👤</span> Profile</a></div>
+      <div class="sidebar-item"><a href="#" onclick="logout()"><span class="icon">🚪</span> Logout</a></div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h1>📍 Track Shipment</h1>
+      <p>Enter a tracking number to get live status updates</p>
+    </div>
+
+    <div class="card" style="max-width:600px;margin-bottom:24px;">
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="track-input" class="form-control" placeholder="e.g. BD2026001002" style="font-size:16px;" />
+        <button class="btn btn-primary" onclick="trackShipment()">Track</button>
+      </div>
+    </div>
+
+    <div id="result-area"></div>
+  </main>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/utils.js"></script>
+<script>
+  if (!requireAuth('customer')) {}
+  renderNavUser();
+
+  const params = new URLSearchParams(window.location.search);
+  const tn = params.get('tn');
+  if (tn) { document.getElementById('track-input').value = tn; trackShipment(); }
+
+  async function trackShipment() {
+    const input = document.getElementById('track-input').value.trim().toUpperCase();
+    const area = document.getElementById('result-area');
+    if (!input) return;
+    area.innerHTML = '<div class="spinner"></div>';
+
+    try {
+      const data = await API.trackCourier(input);
+      const c = data.courier;
+      const history = [...c.trackingHistory].reverse();
+      const statusIcon = { BOOKED:'📋',PICKED_UP:'📦',IN_TRANSIT:'🚚',AT_HUB:'🏭',OUT_FOR_DELIVERY:'🛵',DELIVERED:'✅',DELIVERY_FAILED:'❌',CANCELLED:'🚫' };
+
+      area.innerHTML = `
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+            <div>
+              <div style="font-size:22px;font-weight:900;color:var(--primary);">${c.trackingNumber}</div>
+              <div style="font-size:14px;color:var(--gray-500);">${c.senderName} → ${c.receiverName}</div>
+            </div>
+            <div>${statusBadge(c.status)}</div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px;padding:16px;background:var(--gray-100);border-radius:10px;margin-bottom:24px;">
+            <div><div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--gray-500);">From</div><div style="font-weight:600;">${c.pickupLocation}</div></div>
+            <div><div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--gray-500);">To</div><div style="font-weight:600;">${c.deliveryLocation}</div></div>
+            <div><div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--gray-500);">Type</div><div style="font-weight:600;">${capitalize(c.packageType)}</div></div>
+            <div><div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--gray-500);">Weight</div><div style="font-weight:600;">${c.packageWeight} kg</div></div>
+            ${c.agent ? `<div><div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--gray-500);">Agent</div><div style="font-weight:600;">${c.agent.name}</div></div>` : ''}
+          </div>
+
+          <h3 style="font-size:16px;font-weight:700;margin-bottom:20px;">📋 Tracking Timeline</h3>
+          <div class="timeline">
+            ${history.map((h, i) => `
+              <div class="timeline-item">
+                <div class="timeline-dot ${i===0?(h.status==='DELIVERED'?'delivered':h.status==='DELIVERY_FAILED'?'failed':'active'):''}"></div>
+                <div class="timeline-content">
+                  <h4>${statusIcon[h.status]||'●'} ${h.status.replace(/_/g,' ')}</h4>
+                  <p>${h.location||'—'} ${h.remarks?'· '+h.remarks:''}</p>
+                  <div class="time">${formatDateTime(h.timestamp)}</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    } catch (e) {
+      area.innerHTML = `<div class="alert alert-error">❌ ${e.message}</div>`;
+    }
+  }
+
+  document.getElementById('track-input').addEventListener('keypress', e => { if (e.key === 'Enter') trackShipment(); });
+</script>
+</body>
+</html>

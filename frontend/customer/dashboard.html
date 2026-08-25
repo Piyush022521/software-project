@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Customer Dashboard - BlueDart Express</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <div class="navbar-brand"><span class="navbar-logo">📦</span>Blue<span style="color:var(--secondary)">Dart</span> Express</div>
+  <div class="navbar-user">
+    <div class="user-avatar" id="nav-user-avatar">U</div>
+    <span id="nav-user-name" style="font-weight:600;font-size:14px;"></span>
+    <button class="btn btn-light btn-sm" onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+<div class="dashboard-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-menu">
+      <div class="sidebar-label">Customer Menu</div>
+      <div class="sidebar-item"><a href="dashboard.html" class="active"><span class="icon">📊</span> Dashboard</a></div>
+      <div class="sidebar-item"><a href="book-courier.html"><span class="icon">➕</span> Book Courier</a></div>
+      <div class="sidebar-item"><a href="my-couriers.html"><span class="icon">📦</span> My Couriers</a></div>
+      <div class="sidebar-item"><a href="track.html"><span class="icon">📍</span> Track Shipment</a></div>
+      <div class="sidebar-label">Account</div>
+      <div class="sidebar-item"><a href="profile.html"><span class="icon">👤</span> Profile</a></div>
+      <div class="sidebar-item"><a href="../public/index.html"><span class="icon">🏠</span> Home</a></div>
+      <div class="sidebar-item"><a href="#" onclick="logout()"><span class="icon">🚪</span> Logout</a></div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="page-header">
+      <h1>Welcome back, <span id="customer-name">—</span> 👋</h1>
+      <p>Here's an overview of your courier activity</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid-stats" style="margin-bottom:28px;">
+      <div class="stat-card">
+        <div class="stat-icon blue">📦</div>
+        <div class="stat-info"><p>Total Bookings</p><h3 id="stat-total">—</h3></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon orange">🚚</div>
+        <div class="stat-info"><p>Active Shipments</p><h3 id="stat-active">—</h3></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon green">✅</div>
+        <div class="stat-info"><p>Delivered</p><h3 id="stat-delivered">—</h3></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon red">🚫</div>
+        <div class="stat-info"><p>Cancelled</p><h3 id="stat-cancelled">—</h3></div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card" style="margin-bottom:24px;">
+      <div class="card-header"><h3 class="card-title">Quick Actions</h3></div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <a href="book-courier.html" class="btn btn-primary">➕ Book New Courier</a>
+        <a href="track.html" class="btn btn-outline">📍 Track Shipment</a>
+        <a href="my-couriers.html" class="btn btn-light">📋 View All Couriers</a>
+      </div>
+    </div>
+
+    <!-- Recent Couriers -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Recent Couriers</h3>
+        <a href="my-couriers.html" class="btn btn-light btn-sm">View All</a>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Tracking No.</th>
+              <th>Receiver</th>
+              <th>Destination</th>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="couriers-table">
+            <tr><td colspan="7" style="text-align:center;padding:32px;"><div class="spinner"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/utils.js"></script>
+<script>
+  if (!requireAuth('customer')) {}
+
+  const user = getUser();
+  document.getElementById('customer-name').textContent = user?.name || '';
+  renderNavUser();
+  setActiveSidebarLink();
+
+  async function loadDashboard() {
+    try {
+      const data = await API.getCouriers();
+      const couriers = data.couriers;
+
+      const active = couriers.filter(c => !['DELIVERED','CANCELLED'].includes(c.status));
+      const delivered = couriers.filter(c => c.status === 'DELIVERED');
+      const cancelled = couriers.filter(c => c.status === 'CANCELLED');
+
+      document.getElementById('stat-total').textContent = couriers.length;
+      document.getElementById('stat-active').textContent = active.length;
+      document.getElementById('stat-delivered').textContent = delivered.length;
+      document.getElementById('stat-cancelled').textContent = cancelled.length;
+
+      const tbody = document.getElementById('couriers-table');
+      if (!couriers.length) {
+        tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">📦</div><h3>No couriers yet</h3><p>Book your first courier to get started</p></div></td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = couriers.slice(0, 5).map(c => `
+        <tr>
+          <td><a href="courier-details.html?id=${c.id}" style="color:var(--primary);font-weight:600;">${c.trackingNumber}</a></td>
+          <td>${c.receiverName}</td>
+          <td>${c.deliveryLocation}</td>
+          <td>${formatDate(c.createdAt)}</td>
+          <td><span style="text-transform:capitalize;">${c.deliveryType}</span></td>
+          <td>${statusBadge(c.status)}</td>
+          <td><a href="courier-details.html?id=${c.id}" class="btn btn-light btn-sm">View</a></td>
+        </tr>
+      `).join('');
+    } catch (e) {
+      showToast('Failed to load dashboard: ' + e.message, 'error');
+    }
+  }
+
+  loadDashboard();
+</script>
+</body>
+</html>

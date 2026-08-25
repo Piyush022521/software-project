@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact - BlueDart Express</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    body { background: var(--gray-100); }
+    .page-hero { background: linear-gradient(135deg, #1a56db, #0e3a8a); color: white; padding: 60px 24px; text-align: center; }
+    .page-hero h1 { font-size: 40px; font-weight: 900; }
+    .content-wrap { max-width: 900px; margin: 48px auto; padding: 0 24px; }
+    .contact-info-card { display: flex; align-items: flex-start; gap: 16px; padding: 20px; background: var(--gray-100); border-radius: 10px; margin-bottom: 16px; }
+    .contact-info-icon { font-size: 28px; }
+    .contact-info-card h4 { font-weight: 700; margin-bottom: 4px; }
+    .contact-info-card p { color: var(--gray-500); font-size: 14px; }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-brand"><span class="navbar-logo">📦</span>Blue<span style="color:var(--secondary)">Dart</span> Express</div>
+  <div class="navbar-links">
+    <a href="index.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="contact.html" class="active">Contact</a>
+    <a href="track.html">Track</a>
+  </div>
+  <div style="display:flex;gap:8px;">
+    <a href="login.html" class="btn btn-outline btn-sm">Login</a>
+    <a href="register.html" class="btn btn-primary btn-sm">Register</a>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <h1>Contact Us</h1>
+  <p>We're here to help. Reach out anytime.</p>
+</div>
+
+<div class="content-wrap">
+  <div class="grid-2">
+    <div class="card">
+      <h2 style="font-size:20px;margin-bottom:20px;">📬 Get in Touch</h2>
+      <div id="contact-alert"></div>
+      <form onsubmit="submitContact(event)">
+        <div class="form-group">
+          <label class="form-label">Your Name</label>
+          <input type="text" class="form-control" placeholder="Full name" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-control" placeholder="you@example.com" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Subject</label>
+          <input type="text" class="form-control" placeholder="How can we help?" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Message</label>
+          <textarea class="form-control" rows="5" placeholder="Describe your issue or inquiry..." required></textarea>
+        </div>
+        <button class="btn btn-primary btn-block">Send Message</button>
+      </form>
+    </div>
+
+    <div>
+      <div class="card" style="margin-bottom:20px;">
+        <h2 style="font-size:20px;margin-bottom:20px;">📞 Contact Information</h2>
+        <div class="contact-info-card">
+          <div class="contact-info-icon">📞</div>
+          <div>
+            <h4>Phone</h4>
+            <p>1800-103-3300 (Toll Free)<br/>Mon–Sat, 9:00 AM – 6:00 PM</p>
+          </div>
+        </div>
+        <div class="contact-info-card">
+          <div class="contact-info-icon">✉️</div>
+          <div>
+            <h4>Email</h4>
+            <p>support@bluedart.com<br/>Response within 24 hours</p>
+          </div>
+        </div>
+        <div class="contact-info-card">
+          <div class="contact-info-icon">📍</div>
+          <div>
+            <h4>Head Office</h4>
+            <p>Blue Dart Centre, Sahar Airport Road,<br/>Andheri East, Mumbai – 400099</p>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h2 style="font-size:20px;margin-bottom:12px;">⏰ Business Hours</h2>
+        <table style="width:100%;font-size:14px;">
+          <tr><td style="padding:6px 0;color:var(--gray-700);">Monday – Friday</td><td style="text-align:right;font-weight:600;">8:00 AM – 8:00 PM</td></tr>
+          <tr><td style="padding:6px 0;color:var(--gray-700);">Saturday</td><td style="text-align:right;font-weight:600;">9:00 AM – 5:00 PM</td></tr>
+          <tr><td style="padding:6px 0;color:var(--gray-700);">Sunday</td><td style="text-align:right;font-weight:600;color:var(--danger);">Closed</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer style="background:var(--dark);color:#9ca3af;text-align:center;padding:24px;font-size:14px;margin-top:48px;">
+  © 2026 BlueDart Express.
+</footer>
+
+<script src="../js/api.js"></script>
+<script src="../js/utils.js"></script>
+<script>
+  function submitContact(e) {
+    e.preventDefault();
+    document.getElementById('contact-alert').innerHTML = '<div class="alert alert-success">✅ Your message has been sent! We\'ll get back to you within 24 hours.</div>';
+    e.target.reset();
+  }
+</script>
+</body>
+</html>

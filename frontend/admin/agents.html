@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Delivery Agents - Admin - BlueDart Express</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-brand"><span class="navbar-logo">📦</span>Blue<span style="color:var(--secondary)">Dart</span> Express</div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <span style="background:var(--danger);color:white;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;">ADMIN</span>
+    <div class="user-avatar" id="nav-user-avatar">A</div>
+    <span id="nav-user-name" style="font-weight:600;font-size:14px;"></span>
+    <button class="btn btn-light btn-sm" onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+<div class="dashboard-layout">
+  <aside class="sidebar">
+    <div class="sidebar-menu">
+      <div class="sidebar-label">Management</div>
+      <div class="sidebar-item"><a href="dashboard.html"><span class="icon">📊</span> Dashboard</a></div>
+      <div class="sidebar-item"><a href="customers.html"><span class="icon">👥</span> Customers</a></div>
+      <div class="sidebar-item"><a href="agents.html" class="active"><span class="icon">🚚</span> Delivery Agents</a></div>
+      <div class="sidebar-item"><a href="couriers.html"><span class="icon">📦</span> All Couriers</a></div>
+      <div class="sidebar-item"><a href="assign.html"><span class="icon">📋</span> Assign Agent</a></div>
+      <div class="sidebar-item"><a href="reports.html"><span class="icon">📈</span> Reports</a></div>
+      <div class="sidebar-label">System</div>
+      <div class="sidebar-item"><a href="#" onclick="logout()"><span class="icon">🚪</span> Logout</a></div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;">
+      <div><h1>Delivery Agents</h1><p>Manage all delivery agents</p></div>
+      <button class="btn btn-primary" onclick="openAddModal()">➕ Add Agent</button>
+    </div>
+
+    <div class="card">
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr><th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Vehicle</th><th>Service Area</th><th>Available</th><th>Status</th></tr>
+          </thead>
+          <tbody id="table-body">
+            <tr><td colspan="8" style="text-align:center;"><div class="spinner"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Add Agent Modal -->
+<div class="modal-overlay hidden" id="add-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Add Delivery Agent</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modal-alert"></div>
+    <form id="add-form">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Full Name *</label><input type="text" id="a-name" class="form-control" required /></div>
+        <div class="form-group"><label class="form-label">Phone</label><input type="tel" id="a-phone" class="form-control" /></div>
+      </div>
+      <div class="form-group"><label class="form-label">Email *</label><input type="email" id="a-email" class="form-control" required /></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Password *</label><input type="password" id="a-pwd" class="form-control" required /></div>
+        <div class="form-group"><label class="form-label">Vehicle Type</label><input type="text" id="a-vehicle" class="form-control" placeholder="Bike/Van/Truck" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Vehicle Number</label><input type="text" id="a-vnum" class="form-control" placeholder="MH12AB1234" /></div>
+        <div class="form-group"><label class="form-label">Service Area</label><input type="text" id="a-area" class="form-control" placeholder="e.g. Mumbai" /></div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:8px;">
+        <button type="submit" class="btn btn-primary" id="add-btn">Create Agent</button>
+        <button type="button" class="btn btn-light" onclick="closeModal()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/utils.js"></script>
+<script>
+  if (!requireAuth('admin')) {}
+  renderNavUser();
+
+  async function load() {
+    try {
+      const data = await API.getDeliveryAgents();
+      const tbody = document.getElementById('table-body');
+      if (!data.agents.length) {
+        tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">🚚</div><h3>No agents found</h3></div></td></tr>';
+        return;
+      }
+      tbody.innerHTML = data.agents.map((a, i) => `
+        <tr>
+          <td style="color:var(--gray-500);">${i+1}</td>
+          <td><div style="font-weight:600;">${a.user?.name || '—'}</div></td>
+          <td>${a.user?.email || '—'}</td>
+          <td>${a.user?.phone || '—'}</td>
+          <td>${a.vehicleType ? `${a.vehicleType} · ${a.vehicleNumber || ''}` : '—'}</td>
+          <td>${a.serviceArea || '—'}</td>
+          <td>
+            <span style="background:${a.isAvailable ? '#d1fae5' : '#fee2e2'};color:${a.isAvailable ? '#065f46' : '#991b1b'};padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;">
+              ${a.isAvailable ? 'Available' : 'Busy'}
+            </span>
+          </td>
+          <td>
+            <span style="background:${a.user?.isActive ? '#d1fae5' : '#fee2e2'};color:${a.user?.isActive ? '#065f46' : '#991b1b'};padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;">
+              ${a.user?.isActive ? 'Active' : 'Disabled'}
+            </span>
+          </td>
+        </tr>
+      `).join('');
+    } catch (e) { showToast('Failed to load agents', 'error'); }
+  }
+
+  function openAddModal() {
+    document.getElementById('add-modal').classList.remove('hidden');
+  }
+  function closeModal() {
+    document.getElementById('add-modal').classList.add('hidden');
+    document.getElementById('add-form').reset();
+    document.getElementById('modal-alert').innerHTML = '';
+  }
+
+  document.getElementById('add-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('add-btn');
+    btn.disabled = true; btn.textContent = 'Creating...';
+    try {
+      await API.createDeliveryAgent({
+        name: document.getElementById('a-name').value,
+        email: document.getElementById('a-email').value,
+        password: document.getElementById('a-pwd').value,
+        phone: document.getElementById('a-phone').value,
+        vehicleType: document.getElementById('a-vehicle').value,
+        vehicleNumber: document.getElementById('a-vnum').value,
+        serviceArea: document.getElementById('a-area').value,
+      });
+      showToast('Agent created successfully!', 'success');
+      closeModal();
+      load();
+    } catch (e) {
+      document.getElementById('modal-alert').innerHTML = `<div class="alert alert-error">❌ ${e.message}</div>`;
+    } finally { btn.disabled = false; btn.textContent = 'Create Agent'; }
+  });
+
+  load();
+</script>
+</body>
+</html>

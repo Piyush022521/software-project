@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard - BlueDart Express</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-brand"><span class="navbar-logo">📦</span>Blue<span style="color:var(--secondary)">Dart</span> Express</div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <span style="background:var(--danger);color:white;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;">ADMIN</span>
+    <div class="user-avatar" id="nav-user-avatar">A</div>
+    <span id="nav-user-name" style="font-weight:600;font-size:14px;"></span>
+    <button class="btn btn-light btn-sm" onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+<div class="dashboard-layout">
+  <!-- Admin Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-menu">
+      <div class="sidebar-label">Management</div>
+      <div class="sidebar-item"><a href="dashboard.html" class="active"><span class="icon">📊</span> Dashboard</a></div>
+      <div class="sidebar-item"><a href="customers.html"><span class="icon">👥</span> Customers</a></div>
+      <div class="sidebar-item"><a href="agents.html"><span class="icon">🚚</span> Delivery Agents</a></div>
+      <div class="sidebar-item"><a href="couriers.html"><span class="icon">📦</span> All Couriers</a></div>
+      <div class="sidebar-item"><a href="assign.html"><span class="icon">📋</span> Assign Agent</a></div>
+      <div class="sidebar-item"><a href="reports.html"><span class="icon">📈</span> Reports</a></div>
+      <div class="sidebar-label">System</div>
+      <div class="sidebar-item"><a href="../public/index.html"><span class="icon">🏠</span> Home</a></div>
+      <div class="sidebar-item"><a href="#" onclick="logout()"><span class="icon">🚪</span> Logout</a></div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h1>Admin Dashboard 👑</h1>
+      <p>Complete overview of the courier system</p>
+    </div>
+
+    <!-- Stats Row 1 -->
+    <div class="grid-4" style="margin-bottom:20px;" id="stats-row">
+      <div class="stat-card"><div class="stat-icon blue">👥</div><div class="stat-info"><p>Total Customers</p><h3 id="s-customers">—</h3></div></div>
+      <div class="stat-card"><div class="stat-icon green">🚚</div><div class="stat-info"><p>Delivery Agents</p><h3 id="s-agents">—</h3></div></div>
+      <div class="stat-card"><div class="stat-icon orange">📦</div><div class="stat-info"><p>Total Couriers</p><h3 id="s-couriers">—</h3></div></div>
+      <div class="stat-card"><div class="stat-icon purple">💰</div><div class="stat-info"><p>Total Revenue</p><h3 id="s-revenue">—</h3></div></div>
+    </div>
+
+    <!-- Stats Row 2 -->
+    <div class="grid-4" style="margin-bottom:28px;">
+      <div class="stat-card"><div class="stat-icon yellow">⏳</div><div class="stat-info"><p>Pending</p><h3 id="s-pending">—</h3></div></div>
+      <div class="stat-card"><div class="stat-icon blue">🚚</div><div class="stat-info"><p>In Transit</p><h3 id="s-transit">—</h3></div></div>
+      <div class="stat-card"><div class="stat-icon green">✅</div><div class="stat-info"><p>Delivered</p><h3 id="s-delivered">—</h3></div></div>
+      <div class="stat-card"><div class="stat-icon red">❌</div><div class="stat-info"><p>Failed</p><h3 id="s-failed">—</h3></div></div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card" style="margin-bottom:24px;">
+      <div class="card-header"><h3 class="card-title">Quick Actions</h3></div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <a href="assign.html" class="btn btn-primary">📋 Assign Agent</a>
+        <a href="agents.html" class="btn btn-outline">➕ Add Agent</a>
+        <a href="couriers.html" class="btn btn-light">📦 View All Couriers</a>
+        <a href="reports.html" class="btn btn-light">📈 View Reports</a>
+      </div>
+    </div>
+
+    <!-- Recent Couriers -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Recent Bookings</h3>
+        <a href="couriers.html" class="btn btn-light btn-sm">View All</a>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr><th>Tracking No.</th><th>Customer</th><th>Receiver</th><th>Route</th><th>Charge</th><th>Status</th><th>Action</th></tr>
+          </thead>
+          <tbody id="recent-table">
+            <tr><td colspan="7" style="text-align:center;"><div class="spinner"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/utils.js"></script>
+<script>
+  if (!requireAuth('admin')) {}
+  renderNavUser();
+
+  async function loadDashboard() {
+    try {
+      const data = await API.getAdminDashboard();
+      const s = data.stats;
+      document.getElementById('s-customers').textContent = s.totalCustomers;
+      document.getElementById('s-agents').textContent = s.totalAgents;
+      document.getElementById('s-couriers').textContent = s.totalCouriers;
+      document.getElementById('s-revenue').textContent = '₹' + parseFloat(s.totalRevenue || 0).toFixed(0);
+      document.getElementById('s-pending').textContent = s.pendingShipments;
+      document.getElementById('s-transit').textContent = s.inTransitShipments;
+      document.getElementById('s-delivered').textContent = s.deliveredShipments;
+      document.getElementById('s-failed').textContent = s.failedDeliveries;
+
+      const tbody = document.getElementById('recent-table');
+      if (!data.recentCouriers.length) {
+        tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">📦</div><h3>No couriers yet</h3></div></td></tr>';
+        return;
+      }
+      tbody.innerHTML = data.recentCouriers.map(c => `
+        <tr>
+          <td><a href="couriers.html" style="color:var(--primary);font-weight:700;">${c.trackingNumber}</a></td>
+          <td>${c.customer?.name || '—'}</td>
+          <td>${c.receiverName}</td>
+          <td>${c.pickupLocation} → ${c.deliveryLocation}</td>
+          <td>${formatCurrency(c.deliveryCharge)}</td>
+          <td>${statusBadge(c.status)}</td>
+          <td><a href="assign.html?id=${c.id}" class="btn btn-primary btn-sm">Manage</a></td>
+        </tr>
+      `).join('');
+    } catch (e) {
+      showToast('Failed to load dashboard: ' + e.message, 'error');
+    }
+  }
+  loadDashboard();
+</script>
+</body>
+</html>

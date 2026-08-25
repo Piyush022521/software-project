@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agent Dashboard - BlueDart Express</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-brand"><span class="navbar-logo">📦</span>Blue<span style="color:var(--secondary)">Dart</span> Express</div>
+  <div class="navbar-user">
+    <div class="user-avatar" id="nav-user-avatar">A</div>
+    <span id="nav-user-name" style="font-weight:600;font-size:14px;"></span>
+    <button class="btn btn-light btn-sm" onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+<div class="dashboard-layout">
+  <aside class="sidebar">
+    <div class="sidebar-menu">
+      <div class="sidebar-label">Agent Menu</div>
+      <div class="sidebar-item"><a href="dashboard.html" class="active"><span class="icon">📊</span> Dashboard</a></div>
+      <div class="sidebar-item"><a href="shipments.html"><span class="icon">🚚</span> Assigned Shipments</a></div>
+      <div class="sidebar-label">Account</div>
+      <div class="sidebar-item"><a href="profile.html"><span class="icon">👤</span> Profile</a></div>
+      <div class="sidebar-item"><a href="#" onclick="logout()"><span class="icon">🚪</span> Logout</a></div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h1>Delivery Dashboard 🚚</h1>
+      <p>Welcome, <strong id="agent-name">—</strong>. Here's your delivery overview.</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid-stats" style="margin-bottom:28px;">
+      <div class="stat-card">
+        <div class="stat-icon blue">📋</div>
+        <div class="stat-info"><p>Assigned</p><h3 id="stat-assigned">—</h3></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon orange">⏳</div>
+        <div class="stat-info"><p>Pending Deliveries</p><h3 id="stat-pending">—</h3></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon green">✅</div>
+        <div class="stat-info"><p>Delivered</p><h3 id="stat-delivered">—</h3></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon red">❌</div>
+        <div class="stat-info"><p>Failed Deliveries</p><h3 id="stat-failed">—</h3></div>
+      </div>
+    </div>
+
+    <!-- Today's Deliveries -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Recent Assigned Shipments</h3>
+        <a href="shipments.html" class="btn btn-light btn-sm">View All</a>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr><th>Tracking No.</th><th>Receiver</th><th>Delivery City</th><th>Weight</th><th>Type</th><th>Status</th><th>Action</th></tr>
+          </thead>
+          <tbody id="shipments-table">
+            <tr><td colspan="7" style="text-align:center;padding:32px;"><div class="spinner"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/utils.js"></script>
+<script>
+  if (!requireAuth('agent')) {}
+  renderNavUser();
+  const user = getUser();
+  document.getElementById('agent-name').textContent = user?.name || '';
+
+  async function loadDashboard() {
+    try {
+      const data = await API.getShipments();
+      const shipments = data.shipments;
+
+      const pending = shipments.filter(s => !['DELIVERED','DELIVERY_FAILED','CANCELLED'].includes(s.status));
+      const delivered = shipments.filter(s => s.status === 'DELIVERED');
+      const failed = shipments.filter(s => s.status === 'DELIVERY_FAILED');
+
+      document.getElementById('stat-assigned').textContent = shipments.length;
+      document.getElementById('stat-pending').textContent = pending.length;
+      document.getElementById('stat-delivered').textContent = delivered.length;
+      document.getElementById('stat-failed').textContent = failed.length;
+
+      const tbody = document.getElementById('shipments-table');
+      if (!shipments.length) {
+        tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">🚚</div><h3>No assignments yet</h3><p>No shipments have been assigned to you.</p></div></td></tr>';
+        return;
+      }
+      tbody.innerHTML = shipments.slice(0, 5).map(s => `
+        <tr>
+          <td><a href="shipment-detail.html?id=${s.id}" style="color:var(--primary);font-weight:700;">${s.trackingNumber}</a></td>
+          <td>${s.receiverName}</td>
+          <td>${s.deliveryLocation}</td>
+          <td>${s.packageWeight} kg</td>
+          <td>${capitalize(s.deliveryType)}</td>
+          <td>${statusBadge(s.status)}</td>
+          <td><a href="shipment-detail.html?id=${s.id}" class="btn btn-primary btn-sm">Manage</a></td>
+        </tr>
+      `).join('');
+    } catch (e) {
+      showToast('Failed to load data: ' + e.message, 'error');
+    }
+  }
+  loadDashboard();
+</script>
+</body>
+</html>

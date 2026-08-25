@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Book Courier - BlueDart Express</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .section-title { font-size: 16px; font-weight: 700; color: var(--primary); margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid var(--primary-light); }
+    .charge-box { background: var(--primary-light); border-radius: 10px; padding: 20px; margin-bottom: 20px; display:flex; align-items:center; justify-content:space-between; }
+    .charge-amount { font-size: 32px; font-weight: 900; color: var(--primary); }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-brand"><span class="navbar-logo">📦</span>Blue<span style="color:var(--secondary)">Dart</span> Express</div>
+  <div class="navbar-user">
+    <div class="user-avatar" id="nav-user-avatar">U</div>
+    <span id="nav-user-name" style="font-weight:600;font-size:14px;"></span>
+    <button class="btn btn-light btn-sm" onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+<div class="dashboard-layout">
+  <aside class="sidebar">
+    <div class="sidebar-menu">
+      <div class="sidebar-label">Customer Menu</div>
+      <div class="sidebar-item"><a href="dashboard.html"><span class="icon">📊</span> Dashboard</a></div>
+      <div class="sidebar-item"><a href="book-courier.html" class="active"><span class="icon">➕</span> Book Courier</a></div>
+      <div class="sidebar-item"><a href="my-couriers.html"><span class="icon">📦</span> My Couriers</a></div>
+      <div class="sidebar-item"><a href="track.html"><span class="icon">📍</span> Track Shipment</a></div>
+      <div class="sidebar-label">Account</div>
+      <div class="sidebar-item"><a href="profile.html"><span class="icon">👤</span> Profile</a></div>
+      <div class="sidebar-item"><a href="../public/index.html"><span class="icon">🏠</span> Home</a></div>
+      <div class="sidebar-item"><a href="#" onclick="logout()"><span class="icon">🚪</span> Logout</a></div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h1>Book a Courier</h1>
+      <p>Fill in the details below to schedule a pickup</p>
+    </div>
+
+    <div id="alert-box"></div>
+
+    <form id="booking-form">
+      <div class="grid-2" style="gap:24px;">
+        <!-- Sender -->
+        <div class="card">
+          <div class="section-title">📤 Sender Details</div>
+          <div class="form-group">
+            <label class="form-label">Sender Name *</label>
+            <input type="text" id="senderName" class="form-control" placeholder="Full name" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Sender Phone *</label>
+            <input type="tel" id="senderPhone" class="form-control" placeholder="10-digit number" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Sender Address *</label>
+            <textarea id="senderAddress" class="form-control" rows="3" placeholder="Full pickup address" required></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Pickup Location (City) *</label>
+            <input type="text" id="pickupLocation" class="form-control" placeholder="e.g. Mumbai" required />
+          </div>
+        </div>
+
+        <!-- Receiver -->
+        <div class="card">
+          <div class="section-title">📥 Receiver Details</div>
+          <div class="form-group">
+            <label class="form-label">Receiver Name *</label>
+            <input type="text" id="receiverName" class="form-control" placeholder="Full name" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Receiver Phone *</label>
+            <input type="tel" id="receiverPhone" class="form-control" placeholder="10-digit number" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Receiver Address *</label>
+            <textarea id="receiverAddress" class="form-control" rows="3" placeholder="Full delivery address" required></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Delivery Location (City) *</label>
+            <input type="text" id="deliveryLocation" class="form-control" placeholder="e.g. Delhi" required />
+          </div>
+        </div>
+      </div>
+
+      <!-- Package Details -->
+      <div class="card" style="margin-top:24px;">
+        <div class="section-title">📦 Package & Delivery Details</div>
+        <div class="form-row-3">
+          <div class="form-group">
+            <label class="form-label">Package Type *</label>
+            <select id="packageType" class="form-control" onchange="calcCharge()">
+              <option value="parcel">Parcel</option>
+              <option value="document">Document</option>
+              <option value="fragile">Fragile</option>
+              <option value="electronics">Electronics</option>
+              <option value="clothing">Clothing</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Package Weight (kg) *</label>
+            <input type="number" id="packageWeight" class="form-control" placeholder="e.g. 1.5" min="0.1" step="0.1" oninput="calcCharge()" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Pickup Date *</label>
+            <input type="date" id="pickupDate" class="form-control" required />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Delivery Type *</label>
+            <select id="deliveryType" class="form-control" onchange="calcCharge()">
+              <option value="standard">Standard (3–5 days) — ₹30/kg</option>
+              <option value="express">Express (1–2 days) — ₹54/kg</option>
+              <option value="overnight">Overnight (Next day) — ₹75/kg</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Payment Method *</label>
+            <select id="paymentMethod" class="form-control">
+              <option value="cash">Cash</option>
+              <option value="online">Online</option>
+              <option value="cod">Cash on Delivery (COD)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Package Description</label>
+          <input type="text" id="packageDescription" class="form-control" placeholder="Brief description of contents" />
+        </div>
+      </div>
+
+      <!-- Charge Display -->
+      <div class="charge-box" id="charge-box" style="margin-top:24px;">
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--primary);">Estimated Delivery Charge</div>
+          <div style="font-size:13px;color:var(--gray-500);margin-top:2px;">Based on weight and delivery type</div>
+        </div>
+        <div class="charge-amount" id="charge-display">₹0.00</div>
+      </div>
+
+      <div style="display:flex;gap:12px;">
+        <button type="submit" class="btn btn-primary btn-lg" id="book-btn">📦 Book Courier</button>
+        <a href="dashboard.html" class="btn btn-light btn-lg">Cancel</a>
+      </div>
+    </form>
+
+    <!-- Success Modal -->
+    <div class="modal-overlay hidden" id="success-modal">
+      <div class="modal" style="text-align:center;max-width:440px;">
+        <div style="font-size:56px;">🎉</div>
+        <h3 style="font-size:22px;margin:16px 0 8px;">Courier Booked!</h3>
+        <p style="color:var(--gray-500);">Your courier has been booked successfully.</p>
+        <div style="background:var(--primary-light);border-radius:10px;padding:16px;margin:20px 0;">
+          <div style="font-size:13px;color:var(--gray-500);">Tracking Number</div>
+          <div id="modal-tracking" style="font-size:24px;font-weight:900;color:var(--primary);margin-top:4px;"></div>
+        </div>
+        <div style="font-size:14px;color:var(--gray-600);margin-bottom:20px;">
+          Charge: <strong id="modal-charge"></strong> via <span id="modal-payment"></span>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:center;">
+          <a href="my-couriers.html" class="btn btn-primary">View My Couriers</a>
+          <button class="btn btn-light" onclick="document.getElementById('success-modal').classList.add('hidden');document.getElementById('booking-form').reset();calcCharge();">Book Another</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/utils.js"></script>
+<script>
+  if (!requireAuth('customer')) {}
+  renderNavUser();
+  setActiveSidebarLink();
+
+  // Set min date to today
+  document.getElementById('pickupDate').min = new Date().toISOString().split('T')[0];
+  document.getElementById('pickupDate').value = new Date().toISOString().split('T')[0];
+
+  function calcCharge() {
+    const weight = parseFloat(document.getElementById('packageWeight').value) || 0;
+    const type = document.getElementById('deliveryType').value;
+    const rates = { standard: 30, express: 54, overnight: 75 };
+    const rate = rates[type] || 30;
+    const charge = Math.max(weight * rate, 50);
+    document.getElementById('charge-display').textContent = '₹' + charge.toFixed(2);
+  }
+
+  calcCharge();
+
+  document.getElementById('booking-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('book-btn');
+    btn.disabled = true;
+    btn.textContent = 'Booking...';
+
+    try {
+      const data = await API.createCourier({
+        senderName: document.getElementById('senderName').value,
+        senderPhone: document.getElementById('senderPhone').value,
+        senderAddress: document.getElementById('senderAddress').value,
+        receiverName: document.getElementById('receiverName').value,
+        receiverPhone: document.getElementById('receiverPhone').value,
+        receiverAddress: document.getElementById('receiverAddress').value,
+        pickupLocation: document.getElementById('pickupLocation').value,
+        deliveryLocation: document.getElementById('deliveryLocation').value,
+        packageType: document.getElementById('packageType').value,
+        packageWeight: document.getElementById('packageWeight').value,
+        packageDescription: document.getElementById('packageDescription').value,
+        pickupDate: document.getElementById('pickupDate').value,
+        deliveryType: document.getElementById('deliveryType').value,
+        paymentMethod: document.getElementById('paymentMethod').value,
+      });
+
+      document.getElementById('modal-tracking').textContent = data.trackingNumber;
+      document.getElementById('modal-charge').textContent = '₹' + parseFloat(data.courier.deliveryCharge).toFixed(2);
+      document.getElementById('modal-payment').textContent = document.getElementById('paymentMethod').options[document.getElementById('paymentMethod').selectedIndex].text;
+      document.getElementById('success-modal').classList.remove('hidden');
+    } catch (err) {
+      document.getElementById('alert-box').innerHTML = `<div class="alert alert-error">❌ ${err.message}</div>`;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '📦 Book Courier';
+    }
+  });
+</script>
+</body>
+</html>

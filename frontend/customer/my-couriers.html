@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Couriers - BlueDart Express</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-brand"><span class="navbar-logo">📦</span>Blue<span style="color:var(--secondary)">Dart</span> Express</div>
+  <div class="navbar-user">
+    <div class="user-avatar" id="nav-user-avatar">U</div>
+    <span id="nav-user-name" style="font-weight:600;font-size:14px;"></span>
+    <button class="btn btn-light btn-sm" onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+<div class="dashboard-layout">
+  <aside class="sidebar">
+    <div class="sidebar-menu">
+      <div class="sidebar-label">Customer Menu</div>
+      <div class="sidebar-item"><a href="dashboard.html"><span class="icon">📊</span> Dashboard</a></div>
+      <div class="sidebar-item"><a href="book-courier.html"><span class="icon">➕</span> Book Courier</a></div>
+      <div class="sidebar-item"><a href="my-couriers.html" class="active"><span class="icon">📦</span> My Couriers</a></div>
+      <div class="sidebar-item"><a href="track.html"><span class="icon">📍</span> Track Shipment</a></div>
+      <div class="sidebar-label">Account</div>
+      <div class="sidebar-item"><a href="profile.html"><span class="icon">👤</span> Profile</a></div>
+      <div class="sidebar-item"><a href="../public/index.html"><span class="icon">🏠</span> Home</a></div>
+      <div class="sidebar-item"><a href="#" onclick="logout()"><span class="icon">🚪</span> Logout</a></div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <h1>My Couriers</h1>
+        <p>View and manage all your courier bookings</p>
+      </div>
+      <a href="book-courier.html" class="btn btn-primary">➕ Book New</a>
+    </div>
+
+    <!-- Filters -->
+    <div class="card" style="margin-bottom:20px;">
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+        <div class="search-bar" style="max-width:280px;">
+          <span>🔍</span>
+          <input type="text" id="search-input" placeholder="Search tracking no, name..." oninput="filterCouriers()" />
+        </div>
+        <select id="status-filter" class="form-control" style="max-width:180px;" onchange="filterCouriers()">
+          <option value="">All Statuses</option>
+          <option value="BOOKED">Booked</option>
+          <option value="PICKED_UP">Picked Up</option>
+          <option value="IN_TRANSIT">In Transit</option>
+          <option value="AT_HUB">At Hub</option>
+          <option value="OUT_FOR_DELIVERY">Out for Delivery</option>
+          <option value="DELIVERED">Delivered</option>
+          <option value="DELIVERY_FAILED">Failed</option>
+          <option value="CANCELLED">Cancelled</option>
+        </select>
+        <span id="count-label" style="font-size:14px;color:var(--gray-500);"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Tracking No.</th>
+              <th>Receiver</th>
+              <th>Route</th>
+              <th>Weight</th>
+              <th>Charge</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="couriers-table">
+            <tr><td colspan="8" style="text-align:center;padding:32px;"><div class="spinner"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Cancel Modal -->
+<div class="modal-overlay hidden" id="cancel-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Cancel Courier</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <p style="color:var(--gray-600);margin-bottom:20px;">Are you sure you want to cancel this courier booking? This action cannot be undone.</p>
+    <div style="background:var(--gray-100);padding:12px 16px;border-radius:8px;margin-bottom:20px;">
+      <strong id="cancel-tracking-display"></strong>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-danger" id="confirm-cancel-btn" onclick="confirmCancel()">Yes, Cancel Booking</button>
+      <button class="btn btn-light" onclick="closeModal()">Keep Booking</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/utils.js"></script>
+<script>
+  if (!requireAuth('customer')) {}
+  renderNavUser();
+  setActiveSidebarLink();
+
+  let allCouriers = [];
+  let cancelId = null;
+
+  async function loadCouriers() {
+    try {
+      const data = await API.getCouriers();
+      allCouriers = data.couriers;
+      filterCouriers();
+    } catch (e) {
+      showToast('Failed to load couriers: ' + e.message, 'error');
+    }
+  }
+
+  function filterCouriers() {
+    const search = document.getElementById('search-input').value.toLowerCase();
+    const status = document.getElementById('status-filter').value;
+
+    const filtered = allCouriers.filter(c => {
+      const matchSearch = !search ||
+        c.trackingNumber.toLowerCase().includes(search) ||
+        c.receiverName.toLowerCase().includes(search) ||
+        c.deliveryLocation.toLowerCase().includes(search);
+      const matchStatus = !status || c.status === status;
+      return matchSearch && matchStatus;
+    });
+
+    document.getElementById('count-label').textContent = `${filtered.length} courier${filtered.length !== 1 ? 's' : ''}`;
+    renderTable(filtered);
+  }
+
+  function renderTable(couriers) {
+    const tbody = document.getElementById('couriers-table');
+    if (!couriers.length) {
+      tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">📦</div><h3>No couriers found</h3><p>Try adjusting your search filters</p></div></td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = couriers.map(c => `
+      <tr>
+        <td><a href="courier-details.html?id=${c.id}" style="color:var(--primary);font-weight:700;">${c.trackingNumber}</a></td>
+        <td>
+          <div style="font-weight:600;">${c.receiverName}</div>
+          <div style="font-size:12px;color:var(--gray-500);">${c.receiverPhone}</div>
+        </td>
+        <td>${c.pickupLocation} → ${c.deliveryLocation}</td>
+        <td>${c.packageWeight} kg</td>
+        <td style="font-weight:600;">${formatCurrency(c.deliveryCharge)}</td>
+        <td>${formatDate(c.createdAt)}</td>
+        <td>${statusBadge(c.status)}</td>
+        <td>
+          <div style="display:flex;gap:6px;">
+            <a href="courier-details.html?id=${c.id}" class="btn btn-light btn-sm">View</a>
+            ${c.status === 'BOOKED' ? `<button class="btn btn-danger btn-sm" onclick="openCancelModal(${c.id},'${c.trackingNumber}')">Cancel</button>` : ''}
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function openCancelModal(id, trackingNumber) {
+    cancelId = id;
+    document.getElementById('cancel-tracking-display').textContent = trackingNumber;
+    document.getElementById('cancel-modal').classList.remove('hidden');
+  }
+
+  function closeModal() {
+    document.getElementById('cancel-modal').classList.add('hidden');
+    cancelId = null;
+  }
+
+  async function confirmCancel() {
+    if (!cancelId) return;
+    const btn = document.getElementById('confirm-cancel-btn');
+    btn.disabled = true;
+    btn.textContent = 'Cancelling...';
+    try {
+      await API.cancelCourier(cancelId);
+      showToast('Courier cancelled successfully.', 'success');
+      closeModal();
+      loadCouriers();
+    } catch (e) {
+      showToast('Cancel failed: ' + e.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Yes, Cancel Booking';
+    }
+  }
+
+  loadCouriers();
+</script>
+</body>
+</html>

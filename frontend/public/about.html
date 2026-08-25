@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About - BlueDart Express</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    body { background: var(--gray-100); }
+    .page-hero { background: linear-gradient(135deg, #1a56db, #0e3a8a); color: white; padding: 60px 24px; text-align: center; }
+    .page-hero h1 { font-size: 40px; font-weight: 900; }
+    .page-hero p { font-size: 18px; opacity: 0.85; margin-top: 10px; }
+    .content-wrap { max-width: 1000px; margin: 48px auto; padding: 0 24px; }
+    .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; margin-top: 32px; }
+    .team-card { background: white; border-radius: var(--border-radius); padding: 28px; text-align: center; box-shadow: var(--shadow); }
+    .team-avatar { width: 70px; height: 70px; border-radius: 50%; background: var(--primary); color: white; font-size: 28px; font-weight: 800; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
+    .team-card h4 { font-size: 16px; font-weight: 700; }
+    .team-card p { color: var(--gray-500); font-size: 14px; margin-top: 4px; }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-brand"><span class="navbar-logo">📦</span>Blue<span style="color:var(--secondary)">Dart</span> Express</div>
+  <div class="navbar-links">
+    <a href="index.html">Home</a>
+    <a href="about.html" class="active">About</a>
+    <a href="contact.html">Contact</a>
+    <a href="track.html">Track</a>
+  </div>
+  <div style="display:flex;gap:8px;">
+    <a href="login.html" class="btn btn-outline btn-sm">Login</a>
+    <a href="register.html" class="btn btn-primary btn-sm">Register</a>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <h1>About BlueDart Express</h1>
+  <p>India's most trusted courier service since 2000</p>
+</div>
+
+<div class="content-wrap">
+  <div class="grid-2" style="gap:24px;margin-bottom:32px;">
+    <div class="card">
+      <h2 style="font-size:22px;margin-bottom:12px;">🏢 Our Story</h2>
+      <p style="color:var(--gray-600);line-height:1.8;">BlueDart Express was founded with a simple mission: to make courier services fast, reliable, and affordable for everyone. From a small operation in Mumbai, we have grown to serve over 200 cities across India with a fleet of dedicated delivery professionals.</p>
+    </div>
+    <div class="card">
+      <h2 style="font-size:22px;margin-bottom:12px;">🎯 Our Mission</h2>
+      <p style="color:var(--gray-600);line-height:1.8;">We strive to connect people and businesses through seamless logistics. Our technology-first approach ensures that every package is tracked in real time, and every customer is kept informed at every step of the delivery process.</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:32px;">
+    <h2 style="font-size:22px;margin-bottom:20px;">📊 Our Values</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;">
+      <div style="text-align:center;padding:20px;background:var(--gray-100);border-radius:10px;">
+        <div style="font-size:32px;margin-bottom:8px;">⚡</div>
+        <h3 style="font-size:16px;font-weight:700;">Speed</h3>
+        <p style="font-size:13px;color:var(--gray-500);">On-time delivery, every time</p>
+      </div>
+      <div style="text-align:center;padding:20px;background:var(--gray-100);border-radius:10px;">
+        <div style="font-size:32px;margin-bottom:8px;">🔒</div>
+        <h3 style="font-size:16px;font-weight:700;">Safety</h3>
+        <p style="font-size:13px;color:var(--gray-500);">Your package, fully secured</p>
+      </div>
+      <div style="text-align:center;padding:20px;background:var(--gray-100);border-radius:10px;">
+        <div style="font-size:32px;margin-bottom:8px;">💡</div>
+        <h3 style="font-size:16px;font-weight:700;">Innovation</h3>
+        <p style="font-size:13px;color:var(--gray-500);">Technology-driven logistics</p>
+      </div>
+      <div style="text-align:center;padding:20px;background:var(--gray-100);border-radius:10px;">
+        <div style="font-size:32px;margin-bottom:8px;">🤝</div>
+        <h3 style="font-size:16px;font-weight:700;">Trust</h3>
+        <p style="font-size:13px;color:var(--gray-500);">Built on customer trust</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:22px;margin-bottom:8px;">👨‍💻 Development Team</h2>
+    <p style="color:var(--gray-500);margin-bottom:24px;font-size:14px;">College Software Engineering Lab Project</p>
+    <div class="team-grid">
+      <div class="team-card"><div class="team-avatar">A</div><h4>Student 1</h4><p>Full Stack Developer</p></div>
+      <div class="team-card"><div class="team-avatar">B</div><h4>Student 2</h4><p>Backend Developer</p></div>
+      <div class="team-card"><div class="team-avatar">C</div><h4>Student 3</h4><p>Frontend Developer</p></div>
+      <div class="team-card"><div class="team-avatar">D</div><h4>Student 4</h4><p>Database Designer</p></div>
+    </div>
+  </div>
+</div>
+
+<footer style="background:var(--dark);color:#9ca3af;text-align:center;padding:24px;font-size:14px;">
+  © 2026 BlueDart Express. College SE Lab Project.
+</footer>
+</body>
+</html>
