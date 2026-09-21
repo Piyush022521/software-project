@@ -1,6 +1,6 @@
 # 📦 Courier Service Management System
 
-**BlueDart Express** — A complete full-stack web application built as a college Software Engineering Lab project.
+**Sonic Express** — A complete full-stack web application built as a college Software Engineering Lab project.
 
 ---
 
@@ -701,4 +701,5 @@ Body (JSON): {"agentId": 1}
 
 ---
 
-*College Software Engineering Lab Project — BlueDart Express Courier Management System*
+*College Software Engineering Lab Project — Sonic Express Courier Management System*
+
